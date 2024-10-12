@@ -1,16 +1,19 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from pymongo import MongoClient
 from urllib.parse import quote_plus
 from bson import ObjectId
 
 
+load_dotenv()
+
 app = Flask(__name__)
 
-# Reemplaza 'miUsuario' y 'miContraseña' con tus credenciales
-username = quote_plus('n3ohck')  # Escapar el nombre de usuario
-password = quote_plus('Kvm82645699@@')  # Escapar la contraseña
-cluster_url = 'n3ohck.2bnezap.mongodb.net'
-db_name = 'agenda'
+username = quote_plus(os.getenv('mongouser'))
+password = quote_plus(os.getenv('mongopassword'))
+cluster_url = os.getenv('mongocluster_url')
+db_name = os.getenv('mongodb_name')
 
 # Configuración de la conexión a MongoDB
 connection_string = f'mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority'
@@ -41,7 +44,7 @@ def agregar_contacto():
     telefono = request.form.get('telefono')
 
     if contactos_collection.find_one({"nombre": nombre}):
-        return jsonify({"mensaje": "El contacto ya existe."}), 400  # Código de error 400 para solicitud incorrecta
+        return jsonify({"mensaje": "El contacto ya existe."}), 400
 
     nuevo_contacto = {
         "nombre": nombre,
@@ -51,4 +54,4 @@ def agregar_contacto():
     return jsonify({"mensaje": "Contacto agregado con éxito!"}), 201
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=os.getenv('DEBUG'))
