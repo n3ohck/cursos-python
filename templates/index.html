@@ -6,16 +6,31 @@
     <title>Agenda de Contactos</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script>
+        let timeoutId;
+
         async function buscarContacto() {
             const query = document.getElementById('buscar-input').value;
-            const response = await fetch(`/buscar?query=${query}`);
-            const resultados = await response.json();
-            mostrarResultados(resultados);
+
+            // Mostrar mensaje de carga
+            const resultadosDiv = document.getElementById('resultados');
+            resultadosDiv.innerHTML = '<div class="text-gray-400">Cargando...</div>';
+
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(async () => {
+                const response = await fetch(`/buscar?query=${query}`);
+                const resultados = await response.json();
+                mostrarResultados(resultados);
+            }, 300); // Esperar 300 ms antes de buscar
         }
 
         function mostrarResultados(resultados) {
             const resultadosDiv = document.getElementById('resultados');
-            resultadosDiv.innerHTML = '';
+            resultadosDiv.innerHTML = ''; // Limpiar resultados anteriores
+
+            if (resultados.length === 0) {
+                resultadosDiv.innerHTML = '<div class="text-gray-400">No se encontraron contactos.</div>';
+                return;
+            }
 
             resultados.forEach(contacto => {
                 const div = document.createElement('div');
@@ -40,7 +55,8 @@
                 mensajeDiv.textContent = data.mensaje;
                 mensajeDiv.className = 'bg-green-500 text-white p-2 rounded mt-4';
             } else {
-                mensajeDiv.textContent = 'Error al agregar el contacto.';
+                const errorData = await response.json();
+                mensajeDiv.textContent = errorData.mensaje; // Mostrar el mensaje de error
                 mensajeDiv.className = 'bg-red-500 text-white p-2 rounded mt-4';
             }
 
@@ -68,7 +84,7 @@
 
         <form id="buscar-form" class="mb-8 hidden" onsubmit="event.preventDefault(); buscarContacto();">
             <h2 class="text-xl font-semibold mb-4">Buscar Contacto</h2>
-            <input id="buscar-input" type="text" placeholder="Nombre del contacto" class="border border-gray-600 bg-gray-700 p-2 w-full rounded mb-4" required>
+            <input id="buscar-input" type="text" placeholder="Nombre del contacto" class="border border-gray-600 bg-gray-700 p-2 w-full rounded mb-4" required oninput="buscarContacto()">
             <div id="resultados" class="bg-gray-600 rounded p-2 mt-2"></div>
             <button type="submit" class="bg-blue-500 text-white p-2 rounded w-full mt-4">Buscar</button>
         </form>
