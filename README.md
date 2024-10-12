@@ -9,7 +9,7 @@ Este repositorio contiene las prácticas que estoy realizando en el curso de Pyt
 - **NumPy**: Para cálculos numéricos y operaciones con matrices.
 - **Matplotlib**: Para la visualización de datos.
 
-## Estructura del Repositorio
+## Estructura del Repositorio por branches
 
 - `flask_contactos/`: Contiene la práctica 1 con Flask.
 

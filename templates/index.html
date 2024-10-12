@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Contactos</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        async function buscarContacto() {
+            const query = document.getElementById('buscar-input').value;
+            const response = await fetch(`/buscar?query=${query}`);
+            const resultados = await response.json();
+            mostrarResultados(resultados);
+        }
+
+        function mostrarResultados(resultados) {
+            const resultadosDiv = document.getElementById('resultados');
+            resultadosDiv.innerHTML = '';
+
+            resultados.forEach(contacto => {
+                const div = document.createElement('div');
+                div.textContent = `${contacto.nombre} - ${contacto.telefono}`;
+                resultadosDiv.appendChild(div);
+            });
+        }
+
+        async function agregarContacto(event) {
+            event.preventDefault(); // Prevenir el envío del formulario
+
+            const formData = new FormData(event.target);
+            const response = await fetch('/agregar', {
+                method: 'POST',
+                body: formData
+            });
+
+            const mensajeDiv = document.getElementById('mensaje');
+
+            if (response.ok) {
+                const data = await response.json();
+                mensajeDiv.textContent = data.mensaje;
+                mensajeDiv.className = 'bg-green-500 text-white p-2 rounded mt-4';
+            } else {
+                mensajeDiv.textContent = 'Error al agregar el contacto.';
+                mensajeDiv.className = 'bg-red-500 text-white p-2 rounded mt-4';
+            }
+
+            mensajeDiv.classList.remove('hidden');
+            event.target.reset(); // Reiniciar el formulario
+        }
+
+        function toggleForm(formType) {
+            const buscarForm = document.getElementById('buscar-form');
+            const agregarForm = document.getElementById('agregar-form');
+
+            buscarForm.classList.toggle('hidden', formType !== 'buscar');
+            agregarForm.classList.toggle('hidden', formType !== 'agregar');
+        }
+    </script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-900 text-white">
+    <div class="bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-6">Agenda de Contactos</h1>
+        
+        <div class="flex justify-between mb-4">
+            <button onclick="toggleForm('buscar')" class="bg-gray-700 p-2 rounded hover:bg-gray-600">Buscar Contacto</button>
+            <button onclick="toggleForm('agregar')" class="bg-gray-700 p-2 rounded hover:bg-gray-600">Agregar Contacto</button>
+        </div>
+
+        <form id="buscar-form" class="mb-8 hidden" onsubmit="event.preventDefault(); buscarContacto();">
+            <h2 class="text-xl font-semibold mb-4">Buscar Contacto</h2>
+            <input id="buscar-input" type="text" placeholder="Nombre del contacto" class="border border-gray-600 bg-gray-700 p-2 w-full rounded mb-4" required>
+            <div id="resultados" class="bg-gray-600 rounded p-2 mt-2"></div>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded w-full mt-4">Buscar</button>
+        </form>
+
+        <form id="agregar-form" class="hidden" onsubmit="agregarContacto(event)">
+            <h2 class="text-xl font-semibold mb-4">Agregar Contacto</h2>
+            <input type="text" name="nombre" placeholder="Nombre" class="border border-gray-600 bg-gray-700 p-2 w-full rounded mb-4" required>
+            <input type="text" name="telefono" placeholder="Teléfono" class="border border-gray-600 bg-gray-700 p-2 w-full rounded mb-4" required>
+            <button type="submit" class="bg-green-500 text-white p-2 rounded w-full">Agregar</button>
+        </form>
+
+        <div id="mensaje" class="hidden"></div>
+    </div>
+</body>
+</html>
