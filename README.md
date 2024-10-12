@@ -11,7 +11,7 @@ Este repositorio contiene las prácticas que estoy realizando en el curso de Pyt
 
 ## Estructura del Repositorio
 
-- `directorio_contactos/`: Contiene la práctica 1 con Flask.
+- `flask_contactos/`: Contiene la práctica 1 con Flask.
 
 ## Cómo Ejecutar
 
