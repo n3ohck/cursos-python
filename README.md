@@ -8,6 +8,8 @@ Este repositorio contiene las prácticas que estoy realizando en el curso de Pyt
 - **Pandas**: Para el manejo y análisis de datos.
 - **NumPy**: Para cálculos numéricos y operaciones con matrices.
 - **Matplotlib**: Para la visualización de datos.
+- **PyMongo**: Para la conexión con MongoDB.
+- **python-dotenv**: Para el manejo de variables de entorno.
 
 ## Estructura del Repositorio por branches
 
