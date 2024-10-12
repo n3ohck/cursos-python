@@ -53,5 +53,38 @@ def agregar_contacto():
     contactos_collection.insert_one(nuevo_contacto)
     return jsonify({"mensaje": "Contacto agregado con éxito!"}), 201
 
+@app.route('/editar/<contacto_id>', methods=['POST'])
+def editar_contacto(contacto_id):
+    nombre = request.form.get('nombre')
+    telefono = request.form.get('telefono')
+
+    contacto_existente = contactos_collection.find_one({"_id": ObjectId(contacto_id)})
+    if not contacto_existente:
+        return jsonify({"mensaje": "Contacto no encontrado."}), 404
+
+    # Actualizar el contacto
+    contactos_collection.update_one(
+        {"_id": ObjectId(contacto_id)},
+        {"$set": {"nombre": nombre, "telefono": telefono}}
+    )
+
+    return jsonify({"mensaje": "Contacto actualizado con éxito!"}), 200
+
+
+@app.route('/eliminar/<contacto_id>', methods=['DELETE'])
+def eliminar_contacto(contacto_id):
+    try:
+        contacto_existente = contactos_collection.find_one({"_id": ObjectId(contacto_id)})
+        
+        if not contacto_existente:
+            return jsonify({"mensaje": "Contacto no encontrado."}), 404
+
+        # Eliminar el contacto
+        contactos_collection.delete_one({"_id": ObjectId(contacto_id)})
+        return jsonify({"mensaje": "Contacto eliminado con éxito!"}), 200
+    except Exception as e:
+        return jsonify({"mensaje": f"Error al eliminar el contacto: {str(e)}"}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=os.getenv('DEBUG'))

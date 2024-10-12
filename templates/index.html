@@ -34,7 +34,27 @@
 
             resultados.forEach(contacto => {
                 const div = document.createElement('div');
-                div.textContent = `${contacto.nombre} - ${contacto.telefono}`;
+                div.classList.add('mb-2', 'p-2', 'bg-gray-700', 'rounded', 'flex', 'justify-between', 'items-center');
+                
+                const contactoInfo = document.createElement('span');
+                contactoInfo.textContent = `${contacto.nombre} - ${contacto.telefono}`;
+                div.appendChild(contactoInfo);
+
+                const botonesDiv = document.createElement('div');
+                
+                const editarBtn = document.createElement('button');
+                editarBtn.textContent = 'Editar';
+                editarBtn.classList.add('bg-blue-500', 'text-white', 'p-1', 'rounded', 'mr-2');
+                editarBtn.onclick = () => mostrarFormularioEdicion(contacto);
+                botonesDiv.appendChild(editarBtn);
+
+                const eliminarBtn = document.createElement('button');
+                eliminarBtn.textContent = 'Eliminar';
+                eliminarBtn.classList.add('bg-red-500', 'text-white', 'p-1', 'rounded');
+                eliminarBtn.onclick = () => eliminarContacto(contacto._id);
+                botonesDiv.appendChild(eliminarBtn);
+
+                div.appendChild(botonesDiv);
                 resultadosDiv.appendChild(div);
             });
         }
@@ -67,9 +87,77 @@
         function toggleForm(formType) {
             const buscarForm = document.getElementById('buscar-form');
             const agregarForm = document.getElementById('agregar-form');
+            const editarForm = document.getElementById('editar-form');
 
             buscarForm.classList.toggle('hidden', formType !== 'buscar');
             agregarForm.classList.toggle('hidden', formType !== 'agregar');
+            editarForm.classList.toggle('hidden', formType !== 'editar');
+        }
+
+        function mostrarFormularioEdicion(contacto) {
+            const editarForm = document.getElementById('editar-form');
+            document.getElementById('contacto-id').value = contacto._id;
+            document.getElementById('editar-nombre').value = contacto.nombre;
+            document.getElementById('editar-telefono').value = contacto.telefono;
+
+            toggleForm('editar'); // Mostrar el formulario de edición
+        }
+
+        async function editarContacto(event) {
+            event.preventDefault(); // Prevenir el envío del formulario
+
+            const contactoId = document.getElementById('contacto-id').value;
+            const nombre = document.getElementById('editar-nombre').value;
+            const telefono = document.getElementById('editar-telefono').value;
+
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            formData.append('telefono', telefono);
+
+            const response = await fetch(`/editar/${contactoId}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const mensajeDiv = document.getElementById('mensaje');
+            if (response.ok) {
+                const data = await response.json();
+                mensajeDiv.textContent = data.mensaje;
+                mensajeDiv.className = 'bg-green-500 text-white p-2 rounded mt-4';
+            } else {
+                const errorData = await response.json();
+                mensajeDiv.textContent = errorData.mensaje; // Mostrar el mensaje de error
+                mensajeDiv.className = 'bg-red-500 text-white p-2 rounded mt-4';
+            }
+
+            mensajeDiv.classList.remove('hidden');
+            toggleForm('buscar'); // Volver a la vista de búsqueda
+        }
+
+        async function eliminarContacto(contactoId) {
+            const confirmacion = confirm('¿Estás seguro de que deseas eliminar este contacto?');
+            if (!confirmacion) {
+                return;
+            }
+
+            const response = await fetch(`/eliminar/${contactoId}`, {
+                method: 'DELETE'
+            });
+
+            const mensajeDiv = document.getElementById('mensaje');
+            if (response.ok) {
+                const data = await response.json();
+                mensajeDiv.textContent = data.mensaje;
+                mensajeDiv.className = 'bg-green-500 text-white p-2 rounded mt-4';
+
+                buscarContacto(); // Actualizar la lista de contactos
+            } else {
+                const errorData = await response.json();
+                mensajeDiv.textContent = errorData.mensaje;
+                mensajeDiv.className = 'bg-red-500 text-white p-2 rounded mt-4';
+            }
+
+            mensajeDiv.classList.remove('hidden');
         }
     </script>
 </head>
@@ -96,7 +184,14 @@
             <button type="submit" class="bg-green-500 text-white p-2 rounded w-full">Agregar</button>
         </form>
 
+        <form id="editar-form" class="hidden" onsubmit="editarContacto(event)">
+            <h2 class="text-xl font-semibold mb-4">Editar Contacto</h2>
+            <input type="hidden" id="contacto-id">
+            <input type="text" id="editar-nombre" placeholder="Nombre" class="border border-gray-600 bg-gray-700 p-2 w-full rounded mb-4" required>
+            <input type="text" id="editar-telefono" placeholder="Teléfono" class="border border-gray-600 bg-gray-700 p-2 w-full rounded mb-4" required>
+            <button type="submit" class="bg-yellow-500 text-white p-2 rounded w-full">Guardar Cambios</button>
+        </form>
+
         <div id="mensaje" class="hidden"></div>
     </div>
 </body>
-</html>
